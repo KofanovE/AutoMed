@@ -15,9 +15,62 @@ keyword = "geeksforgeeks"
 
 driver.get("https://www.geeksforgeeks.org/")
 
-time.sleep(30)
+
+i = 0
+while i < 10:
+    print(i+1)
+    i = i +1
+    time.sleep(1)
+
+"""
+parent = driver.current_window_handle
+uselessWindows = driver.window_handles
+print("Parent:", parent)
+for winId in uselessWindows:
+    print(winId)
+    if winId != parent:
+        driver.switch_to.window(windId)
+        driver.close()
+"""
+print('look for a form')
+print('')
+iframe = driver.find_element(By.CSS_SELECTOR, '#credential_picker_container > iframe:nth-child(1)')
+
+
+print('connect to form')
+print('')
+driver.switch_to.frame(iframe)
+
+
+
+time.sleep(1)
+print('look for butoon on frame')
+print('')
+but_close = driver.find_element(By.ID, "close")
+
+time.sleep(1)
+print('click to butoon on frame')
+print('')
+but_close.click()
+
+
+time.sleep(1)
+print('switch to main frame')
+print('')
+driver.switch_to.default_content()
+
+
+
+time.sleep(1)
+print('look for darkMode button')
+print('')
+
 
 element = driver.find_element(By.CLASS_NAME, "darkMode-wrap")
+
+time.sleep(1)
+print('click to darkMode button')
+print('')
 
 element.click()
 
