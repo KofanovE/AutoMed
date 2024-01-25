@@ -1,6 +1,8 @@
 from selenium import webdriver
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import Select
+from selenium.webdriver.common.action_chains import ActionChains
 import os
 import time
 
@@ -34,32 +36,88 @@ for winId in uselessWindows:
 """
 print('look for a form')
 print('')
+# Find a form contener
 iframe = driver.find_element(By.CSS_SELECTOR, '#credential_picker_container > iframe:nth-child(1)')
 
 
 print('connect to form')
 print('')
+# Connect to contener
 driver.switch_to.frame(iframe)
-
 
 
 time.sleep(1)
 print('look for butoon on frame')
 print('')
+# Find a button in form
 but_close = driver.find_element(By.ID, "close")
 
 time.sleep(1)
 print('click to butoon on frame')
 print('')
+# Close form by button close
 but_close.click()
 
 
 time.sleep(1)
 print('switch to main frame')
 print('')
+# Return to main form
 driver.switch_to.default_content()
 
 
+"""
+#
+# Working with child_menu
+#
+
+time.sleep(1)
+print('look for select menu')
+print('')
+# Find an item of mainmenu 
+select = driver.find_element(By.CSS_SELECTOR, 'li.header-main__list-item:nth-child(3)')
+
+time.sleep(1)
+print('select a parent punct')
+print('')
+# Move a cursor to item of mainmenu
+ActionChains(driver).move_to_element(select).perform()
+
+
+time.sleep(3)
+print('look for child menu')
+print('')
+# Find an item in 1_child_menu
+select_2 = select.find_element(By.CSS_SELECTOR, 'li.header-main__list-item:nth-child(3) > ul:nth-child(3) > li:nth-child(6)')
+
+
+time.sleep(3)
+print('select a child menu')
+print('')
+# Move a cursor on item in 1_child_menu
+ActionChains(driver).move_to_element(select_2).perform()
+
+
+time.sleep(3)
+print('look for child punct')
+print('')
+# Find an item in 2_child_menu
+select_3 = select_2.find_element(By.CSS_SELECTOR, 'li.selected:nth-child(6) > ul:nth-child(3) > li:nth-child(1)')
+
+
+time.sleep(3)
+print('select a child punct')
+print('')
+# Click on item in 2_child_menu
+select_3.click()
+"""
+
+
+
+"""
+#
+# Press on button
+#
 
 time.sleep(1)
 print('look for darkMode button')
@@ -73,6 +131,15 @@ print('click to darkMode button')
 print('')
 
 element.click()
+"""
+
+
+
+
+"""
+#
+# Input and clear text in line
+#
 
 time.sleep(1)
 print('look for string for input text')
@@ -86,16 +153,22 @@ print('')
 
 element_text.send_keys("The first text...")
 
-time.sleep(3)
+time.sleep(1)
 print('delete text 1')
 print('')
 
 element_text.clear()
 
-time.sleep(3)
+time.sleep(1)
 print('print text 2')
 print('')
 
 element_text.send_keys("The second text!")
 
+time.sleep(1)
+print('delete text 2')
+print('')
+
+element_text.clear()
+"""
 
