@@ -74,5 +74,28 @@ print('')
 
 element.click()
 
+time.sleep(1)
+print('look for string for input text')
+print('')
+
+element_text = driver.find_element(By.CSS_SELECTOR, '.ant-input')
+
+time.sleep(1)
+print('print text 1')
+print('')
+
+element_text.send_keys("The first text...")
+
+time.sleep(3)
+print('delete text 1')
+print('')
+
+element_text.clear()
+
+time.sleep(3)
+print('print text 2')
+print('')
+
+element_text.send_keys("The second text!")
 
 
