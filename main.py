@@ -15,19 +15,16 @@ driver = webdriver.Firefox(service=service)
 
 keyword = "geeksforgeeks"
 
-#driver.get("https://www.geeksforgeeks.org/")
+driver.get("https://www.geeksforgeeks.org/")
 
-window_handles = driver.window_handles
 
-print(window_handles)
 
-"""
 i = 0
 while i < 10:
     print(i+1)
     i = i +1
     time.sleep(1)
-"""
+print()
 
 
 """
@@ -100,6 +97,22 @@ print('select a parent punct')
 print('')
 # Move a cursor to item of mainmenu
 ActionChains(driver).move_to_element(select).perform()
+
+
+"""
+#
+# Writing text of 2 item of menu
+#
+
+time.sleep(1)
+print('look for  menu')
+print('')
+menu = driver.find_element(By.XPATH, '/html/body/nav/div/div[1]/ul[1]/li[3]/ul/li[2]')
+
+print(menu.text)
+print()
+"""
+
 
 
 time.sleep(3)
