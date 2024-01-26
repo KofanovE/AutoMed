@@ -114,6 +114,29 @@ print()
 """
 
 
+"""
+#
+# Getting all items of menu
+#
+
+time.sleep(1)
+print('look for  menu')
+print('')
+menu = driver.find_element(By.XPATH, '/html/body/nav/div/div[1]/ul[1]/li[3]/ul')
+
+time.sleep(1)
+print('look for  all items')
+print('')
+items = menu.find_elements(By.TAG_NAME, 'li')
+
+for item in items:
+    print(item.text)
+    time.sleep(1)
+print()
+"""
+
+
+
 
 time.sleep(3)
 print('look for child menu')
