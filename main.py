@@ -15,16 +15,26 @@ driver = webdriver.Firefox(service=service)
 
 keyword = "geeksforgeeks"
 
-driver.get("https://www.geeksforgeeks.org/")
+#driver.get("https://www.geeksforgeeks.org/")
 
+window_handles = driver.window_handles
 
+print(window_handles)
+
+"""
 i = 0
 while i < 10:
     print(i+1)
     i = i +1
     time.sleep(1)
+"""
+
 
 """
+#
+# Close all windows, without parent's
+#
+
 parent = driver.current_window_handle
 uselessWindows = driver.window_handles
 print("Parent:", parent)
@@ -34,6 +44,13 @@ for winId in uselessWindows:
         driver.switch_to.window(windId)
         driver.close()
 """
+
+
+"""
+#
+# Work with contener or form
+#
+
 print('look for a form')
 print('')
 # Find a form contener
@@ -64,9 +81,10 @@ print('switch to main frame')
 print('')
 # Return to main form
 driver.switch_to.default_content()
-
-
 """
+
+
+
 #
 # Working with child_menu
 #
@@ -110,7 +128,7 @@ print('select a child punct')
 print('')
 # Click on item in 2_child_menu
 select_3.click()
-"""
+
 
 
 
