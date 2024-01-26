@@ -6,6 +6,10 @@ from selenium.webdriver.common.action_chains import ActionChains
 import os
 import time
 
+"""
+Program entering to olx account without true password and email
+"""
+
 
 options = webdriver.FirefoxOptions()
 
