@@ -3,6 +3,9 @@ from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
 from cred import email, key
 from patients import first_name, second_name, birthday_date
 import os
@@ -17,95 +20,67 @@ driver = webdriver.Firefox(service=service)
 
 driver.get("https://id.helsi.pro/")
 
-i = 0
-while i < 5:
-    print(i+1)
-    i = i +1
-    time.sleep(1)
+print('look for email input line and send email')
 print()
+WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '#email'))).send_keys(email)
 
-time.sleep(1)
-print('look for email input line')
-print()
-email_line = driver.find_element(By.CSS_SELECTOR, '#email')
-
-time.sleep(1)
-print('send email')
-print()
-email_line.send_keys(email)
-
-time.sleep(1)
 print('look for key input line')
 print()
 cred_line = driver.find_element(By.CSS_SELECTOR, '#usercreds')
 
-time.sleep(1)
 print('send key')
 print()
 cred_line.send_keys(key)
 
-time.sleep(1)
 print('look for key button enter')
 print()
 enter_btn = driver.find_element(By.CSS_SELECTOR, '.btn')
 
-time.sleep(1)
 print('press enter')
 print()
 enter_btn.click()
 
-i = 0
-while i < 20:
-    print(i+1)
-    i = i +1
-    time.sleep(1)
+print('look for button patient and press it')
 print()
+WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'div.col-xs-12:nth-child(6) > a:nth-child(1) > div:nth-child(1)'))).click()
 
-time.sleep(1)
-print('look for key button patient')
+print('look for email input second name and send it')
 print()
-patient_btn = driver.find_element(By.CSS_SELECTOR, 'div.col-xs-12:nth-child(6) > a:nth-child(1) > div:nth-child(1)')
+WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div/div[2]/div[2]/div[2]/div/div/div[2]/div[1]/form/div[1]/div[1]/div/div[2]/div/input'))).send_keys(second_name)
 
-time.sleep(1)
-print('press button patient')
-print()
-patient_btn.click()
-
-"""
-.has-error > div:nth-child(2) > div:nth-child(1) > input:nth-child(1)
-.has-error > div:nth-child(2) > div:nth-child(1)
-/html/body/div/div/div/div[2]/div[2]/div[2]/div/div/div[2]/div[1]/form/div[1]/div[1]/div/div[2]/div/input
-"""
-
-time.sleep(3)
-print('look for line input second name')
-print()
-second_name_line = driver.find_element(By.XPATH, '/html/body/div/div/div/div[2]/div[2]/div[2]/div/div/div[2]/div[1]/form/div[1]/div[1]/div/div[2]/div/input')
-
-time.sleep(1)
-print('send second name')
-print()
-second_name_line.send_keys(second_name)
-
-time.sleep(3)
 print('look for line input first name')
 print()
 first_name_line = driver.find_element(By.CSS_SELECTOR, 'div.form-group:nth-child(2) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > input:nth-child(1)')
 
-time.sleep(1)
 print('send first name')
 print()
 first_name_line.send_keys(first_name)
 
-time.sleep(3)
 print('look for key line input birthday date')
 print()
-birthday_line = driver.find_element(By.CSS_SELECTOR, '.input__maskedDate')
+birthday_line = driver.find_element(By.XPATH, '/html/body/div/div/div/div[2]/div[2]/div[2]/div/div/div[2]/div[1]/form/div[1]/div[3]/div/div[2]/div/div/input')
 
-time.sleep(1)
+print('click on line input birthday')
+print()
+birthday_line.click()
+
 print('send birthday date')
 print()
 birthday_line.send_keys(birthday_date)
+
+print('look for button find a patient and press it')
+print()
+WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '.margin-left-offset-20 > button:nth-child(1)'))).click()
+
+print('look for button operation with patient')
+print()
+WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '.btn-text-lg > span:nth-child(1) > svg:nth-child(1)'))).click()
+
+print('look for button episode')
+print()
+WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'li.ant-dropdown-menu-item:nth-child(4) > span:nth-child(1) > a:nth-child(1)'))).click()
+
+
 
 
 
