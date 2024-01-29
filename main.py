@@ -6,10 +6,14 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
+from datetime import datetime, timedelta
 from cred import email, key
 from patients import first_name, second_name, birthday_date
 import os
 import time
+
+current_date = datetime.now()
+dead_time = current_date - timedelta(10)
 
 
 options = webdriver.FirefoxOptions()
@@ -90,16 +94,27 @@ time.sleep(3)
 episodes = driver.find_element(By.CSS_SELECTOR, '.ant-table-content')
 rows_episodes = episodes.find_elements(By.TAG_NAME, 'tr')
 
-print('len = ', len(rows_episodes))
-
-print(rows_episodes)
-
-
 for row in rows_episodes:
     cells = row.find_elements(By.TAG_NAME, 'td')
     i = 0
     for cell in cells:
         print(i, '. ', cell.text)
+        if i == 1:
+            if "Z02.3" in cell.text:
+                print("yes_1")
+            else:
+                print("no_1")
+        elif i == 2:
+            if "Діагностика" in cell.text:
+                print("yes_2")
+            else:
+                print("no_2")
+        elif i == 3:
+            specified_date = datetime.strptime(cell.text[:10], '%d.%m.%Y')
+            if specified_date > dead_time:
+                print("yes_3")
+            else:
+                print("no_3")
         i = i + 1
         
     
