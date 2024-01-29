@@ -82,6 +82,38 @@ WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'li
 
 
 
+print('look for all episodes')
+print()
+WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.CSS_SELECTOR, '.ant-table-content')))
+
+time.sleep(3)
+episodes = driver.find_element(By.CSS_SELECTOR, '.ant-table-content')
+rows_episodes = episodes.find_elements(By.TAG_NAME, 'tr')
+
+print('len = ', len(rows_episodes))
+
+print(rows_episodes)
+
+
+for row in rows_episodes:
+    cells = row.find_elements(By.TAG_NAME, 'td')
+    i = 0
+    for cell in cells:
+        print(i, '. ', cell.text)
+        i = i + 1
+        
+    
+
+
+
+
+
+
+
+
+
+
+
 
 
 
