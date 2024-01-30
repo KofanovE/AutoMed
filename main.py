@@ -9,7 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from datetime import datetime, timedelta
 from cred import email, key
-from patients import first_name, second_name, birthday_date
+#from patients import first_name, second_name, birthday_date
 from doctors import full_doctors_list
 import os
 import time
@@ -24,6 +24,11 @@ except FileNotFoundError:
 print(df_complete_episodes)
 print()
 
+try:
+    df_patients = pd.read_excel("Patients.xlsx")
+except FileNotFoundError:
+    df_patients = pd.DataFrame()
+
 
 
 options = webdriver.FirefoxOptions()
@@ -33,6 +38,10 @@ service = Service(executable_path = 'geckodriver')
 driver = webdriver.Firefox(service=service)
 
 driver.get("https://id.helsi.pro/")
+
+
+
+""" Authorization """
 
 print('look for email input line and send email')
 print()
@@ -58,131 +67,155 @@ print('look for button patient and press it')
 print()
 WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'div.col-xs-12:nth-child(6) > a:nth-child(1) > div:nth-child(1)'))).click()
 
-print('look for email input second name and send it')
-print()
-WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div/div[2]/div[2]/div[2]/div/div/div[2]/div[1]/form/div[1]/div[1]/div/div[2]/div/input'))).send_keys(second_name)
-
-print('look for line input first name')
-print()
-first_name_line = driver.find_element(By.CSS_SELECTOR, 'div.form-group:nth-child(2) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > input:nth-child(1)')
-
-print('send first name')
-print()
-first_name_line.send_keys(first_name)
-
-print('look for key line input birthday date')
-print()
-birthday_line = driver.find_element(By.XPATH, '/html/body/div/div/div/div[2]/div[2]/div[2]/div/div/div[2]/div[1]/form/div[1]/div[3]/div/div[2]/div/div/input')
-
-print('click on line input birthday')
-print()
-birthday_line.click()
-
-print('send birthday date')
-print()
-birthday_line.send_keys(birthday_date)
-
-print('look for button find a patient and press it')
-print()
-WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '.margin-left-offset-20 > button:nth-child(1)'))).click()
-
-print('look for button operation with patient')
-print()
-WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '.btn-text-lg > span:nth-child(1) > svg:nth-child(1)'))).click()
-
-print('look for button episode')
-print()
-WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'li.ant-dropdown-menu-item:nth-child(4) > span:nth-child(1) > a:nth-child(1)'))).click()
-
-
-
-print('look for all episodes')
-print()
-WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.CSS_SELECTOR, '.ant-table-content')))
-
-time.sleep(3)
-episodes = driver.find_element(By.CSS_SELECTOR, '.ant-table-content')
-rows_episodes = episodes.find_elements(By.TAG_NAME, 'tr')
-
-
-for row in rows_episodes:
-    cells = row.find_elements(By.TAG_NAME, 'td')
-    i = 0
-    for cell in cells:
-        print(i, '. ', cell.text)
-        if i == 1:
-            if "Z02.3" in cell.text:
-                print("yes_1")
-                selected_episode = cell
-            else:
-                print("no_1")
-                break
-        elif i == 2:
-            if "Діагностика" in cell.text:
-                print("yes_2")
-            else:
-                print("no_2")
-                break
-        elif i == 3:
-            specified_date = datetime.strptime(cell.text[:10], '%d.%m.%Y')
-            if specified_date > dead_time:
-                print("yes_3")
-                break
-            else:
-                print("no_3")
-                break
-        i = i + 1
-        
-if selected_episode:
-    selected_episode.click()
-else:
-    print("No selected episode")
 
 
 
 
-print('look for all reception')
-print()
-WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.CSS_SELECTOR, '.ant-table-tbody')))
 
 
-time.sleep(3)
-receptions = driver.find_element(By.CSS_SELECTOR, '.ant-table-tbody')
-rows_receptions = receptions.find_elements(By.TAG_NAME, 'tr')
-
-doctors_list = full_doctors_list
-two_entries_flag = False
+for index, row in df_patients.iterrows():
+    second_name = row["Surname"]
+    first_name = row["Name"]
+    birthday_date = row["Birthday"]
 
 
-for row in rows_receptions:
-    cells = row.find_elements(By.TAG_NAME, 'td')
-    i = 0
-    for cell in cells:
-        print(i, '. ', cell.text)
-        if i == 5:
-            if cell.text in doctors_list:
-                doctors_list.remove(cell.text)
-            else:
-                print('!!! The doctor ', cell.text, ' has done two entries !!!')
-                two_entries_flag = True
+
+    
+
+    """ Cicle working with episodes """
+
+
+    print('look for input second name and send it')
+    print()
+    WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div/div[2]/div[2]/div[2]/div/div/div[2]/div[1]/form/div[1]/div[1]/div/div[2]/div/input'))).send_keys(second_name)
+
+    print('look for line input first name')
+    print()
+    first_name_line = driver.find_element(By.CSS_SELECTOR, 'div.form-group:nth-child(2) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > input:nth-child(1)')
+
+    print('send first name')
+    print()
+    first_name_line.send_keys(first_name)
+
+    print('look for key line input birthday date')
+    print()
+    birthday_line = driver.find_element(By.XPATH, '/html/body/div/div/div/div[2]/div[2]/div[2]/div/div/div[2]/div[1]/form/div[1]/div[3]/div/div[2]/div/div/input')
+
+    print('click on line input birthday')
+    print()
+    birthday_line.click()
+
+    print('send birthday date')
+    print()
+    birthday_line.send_keys(birthday_date)
+
+    print('look for button find a patient and press it')
+    print()
+    WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '.margin-left-offset-20 > button:nth-child(1)'))).click()
+
+    print('look for button operation with patient')
+    print()
+    WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '.btn-text-lg > span:nth-child(1) > svg:nth-child(1)'))).click()
+
+    print('look for button episode')
+    print()
+    WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'li.ant-dropdown-menu-item:nth-child(4) > span:nth-child(1) > a:nth-child(1)'))).click()
+
+    print('look for all episodes')
+    print()
+    WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.CSS_SELECTOR, '.ant-table-content')))
+
+    time.sleep(3)
+    episodes = driver.find_element(By.CSS_SELECTOR, '.ant-table-content')
+    rows_episodes = episodes.find_elements(By.TAG_NAME, 'tr')
+
+
+    for row in rows_episodes:
+        cells = row.find_elements(By.TAG_NAME, 'td')
+        i = 0
+        for cell in cells:
+            print(i, '. ', cell.text)
+            if i == 1:
+                if "Z02.3" in cell.text:
+                    print("yes_1")
+                    selected_episode = cell
+                else:
+                    print("no_1")
+                    break
+            elif i == 2:
+                if "Діагностика" in cell.text:
+                    print("yes_2")
+                else:
+                    print("no_2")
+                    break
+            elif i == 3:
+                specified_date = datetime.strptime(cell.text[:10], '%d.%m.%Y')
+                if specified_date > dead_time:
+                    print("yes_3")
+                    break
+                else:
+                    print("no_3")
+                    break
+            i = i + 1
             
- 
-        i = i + 1
-if not two_entries_flag:    
-    if not doctors_list:
-        print('!!! Episode closed !!!')
-        print()
-        coincidence = df_complete_episodes[(df_complete_episodes['Surname'] == second_name) & (df_complete_episodes['Name'] == first_name) & (df_complete_episodes['Birthday'] == birthday_date)]
-        if coincidence.empty:
-            data = {'Surname': second_name, 'Name': first_name, 'Birthday': birthday_date}
-            df_complete_episodes = df__complete_episodes.append(data, ignore_index=True)
-            df.to_excel("Complete_Episodes.xlsx", index=False)
-                    
-        else:
-            print("Episode was written")
-        
+    if selected_episode:
+        selected_episode.click()
     else:
-        print('Remaining doctors: ', doctors_list)
+        print("No selected episode")
+
+
+
+
+    print('look for all reception')
+    print()
+    WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.CSS_SELECTOR, '.ant-table-tbody')))
+
+
+    time.sleep(3)
+    receptions = driver.find_element(By.CSS_SELECTOR, '.ant-table-tbody')
+    rows_receptions = receptions.find_elements(By.TAG_NAME, 'tr')
+
+    doctors_list = full_doctors_list
+    two_entries_flag = False
+
+
+    for row in rows_receptions:
+        cells = row.find_elements(By.TAG_NAME, 'td')
+        i = 0
+        for cell in cells:
+            print(i, '. ', cell.text)
+            if i == 5:
+                if cell.text in doctors_list:
+                    doctors_list.remove(cell.text)
+                else:
+                    print('!!! The doctor ', cell.text, ' has done two entries !!!')
+                    two_entries_flag = True
+                
+     
+            i = i + 1
+    if not two_entries_flag:    
+        if not doctors_list:
+            print('!!! Episode closed !!!')
+            print()
+            coincidence = df_complete_episodes[(df_complete_episodes['Surname'] == second_name) & (df_complete_episodes['Name'] == first_name) & (df_complete_episodes['Birthday'] == birthday_date)]
+            if coincidence.empty:
+                data = {'Surname': second_name, 'Name': first_name, 'Birthday': birthday_date}
+                df_complete_episodes = df__complete_episodes.append(data, ignore_index=True)
+                df.to_excel("Complete_Episodes.xlsx", index=False)
+                        
+            else:
+                print("Episode was written")
+                print("___________________")
+                print()
+            
+        else:
+            print('Remaining doctors: ', doctors_list)
+
+
+    print('look for button patient and press it')
+    print()
+    WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'li.active > a:nth-child(1) > span:nth-child(1) > svg:nth-child(1)'))).click()
+
     
 
 
