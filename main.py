@@ -94,6 +94,7 @@ time.sleep(3)
 episodes = driver.find_element(By.CSS_SELECTOR, '.ant-table-content')
 rows_episodes = episodes.find_elements(By.TAG_NAME, 'tr')
 
+
 for row in rows_episodes:
     cells = row.find_elements(By.TAG_NAME, 'td')
     i = 0
@@ -102,21 +103,31 @@ for row in rows_episodes:
         if i == 1:
             if "Z02.3" in cell.text:
                 print("yes_1")
+                selected_episode = cell
             else:
                 print("no_1")
+                break
         elif i == 2:
             if "Діагностика" in cell.text:
                 print("yes_2")
             else:
                 print("no_2")
+                break
         elif i == 3:
             specified_date = datetime.strptime(cell.text[:10], '%d.%m.%Y')
             if specified_date > dead_time:
                 print("yes_3")
+                break
             else:
                 print("no_3")
+                break
         i = i + 1
         
+if selected_episode:
+    selected_episode.click()
+else:
+    print("No selected episode")
+
     
 
 
