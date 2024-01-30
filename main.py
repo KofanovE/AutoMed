@@ -9,11 +9,13 @@ from selenium.webdriver.common.keys import Keys
 from datetime import datetime, timedelta
 from cred import email, key
 from patients import first_name, second_name, birthday_date
+from doctors import full_doctors_list
 import os
 import time
 
 current_date = datetime.now()
 dead_time = current_date - timedelta(10)
+
 
 
 options = webdriver.FirefoxOptions()
@@ -128,8 +130,42 @@ if selected_episode:
 else:
     print("No selected episode")
 
-    
 
+
+
+print('look for all reception')
+print()
+WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.CSS_SELECTOR, '.ant-table-tbody')))
+
+
+time.sleep(3)
+receptions = driver.find_element(By.CSS_SELECTOR, '.ant-table-tbody')
+rows_receptions = receptions.find_elements(By.TAG_NAME, 'tr')
+
+doctors_list = full_doctors_list
+two_entries_flag = False
+
+
+for row in rows_receptions:
+    cells = row.find_elements(By.TAG_NAME, 'td')
+    i = 0
+    for cell in cells:
+        print(i, '. ', cell.text)
+        if i == 5:
+            if cell.text in doctors_list:
+                doctors_list.remove(cell.text)
+            else:
+                print('!!! The doctor ', cell.text, ' has done two entries !!!')
+                two_entries_flag = True
+            
+ 
+        i = i + 1
+if not two_entries_flag:    
+    if not doctors_list:
+        print('!!! Episode closed !!!')
+    else:
+        print('Remaining doctors: ', doctors_list)
+    
 
 
 
