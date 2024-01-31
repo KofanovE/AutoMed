@@ -15,7 +15,7 @@ import os
 import time
 
 current_date = datetime.now()
-dead_time = current_date - timedelta(10)
+dead_time = current_date - timedelta(20)
 
 try:
     df_complete_episodes = pd.read_excel("Complete_Episodes.xlsx")
@@ -77,6 +77,7 @@ for index, row in df_patients.iterrows():
     second_name = row["Surname"]
     first_name = row["Name"]
     birthday_date = row["Birthday"]
+    
 
 
 
@@ -129,36 +130,49 @@ for index, row in df_patients.iterrows():
     episodes = driver.find_element(By.CSS_SELECTOR, '.ant-table-content')
     rows_episodes = episodes.find_elements(By.TAG_NAME, 'tr')
 
+    
 
+    flag_episode = False # It's working, when there is only one z02.3 episode in episodes
     for row in rows_episodes:
         cells = row.find_elements(By.TAG_NAME, 'td')
         i = 0
         for cell in cells:
-            print(i, '. ', cell.text)
+            #print(i, '. ', cell.text)
+            if i == 0:
+                print("!!!", cell.tag_name)
+                print(cell.get_attribute("class"))
+                print(cell.value_of_css_property("fill"))
+                print(cell.value_of_css_property("stroke"))
+            
             if i == 1:
                 if "Z02.3" in cell.text:
-                    print("yes_1")
+                    #print("yes_1")
                     selected_episode = cell
                 else:
-                    print("no_1")
+                    #print("no_1")
                     break
             elif i == 2:
                 if "Діагностика" in cell.text:
-                    print("yes_2")
+                    #print("yes_2")
+                    print()
                 else:
                     print("no_2")
                     break
             elif i == 3:
                 specified_date = datetime.strptime(cell.text[:10], '%d.%m.%Y')
                 if specified_date > dead_time:
-                    print("yes_3")
+                    #print("yes_3")
+                    flag_episode = True
+                    
                     break
                 else:
-                    print("no_3")
+                    #print("no_3")
+                    print()
                     break
             i = i + 1
             
-    if selected_episode:
+    if selected_episode and flag_episode:
+        doctors_list = full_doctors_list.copy()
         selected_episode.click()
     else:
         print("No selected episode")
@@ -175,41 +189,40 @@ for index, row in df_patients.iterrows():
     receptions = driver.find_element(By.CSS_SELECTOR, '.ant-table-tbody')
     rows_receptions = receptions.find_elements(By.TAG_NAME, 'tr')
 
-    doctors_list = full_doctors_list
-    two_entries_flag = False
+    
 
 
     for row in rows_receptions:
         cells = row.find_elements(By.TAG_NAME, 'td')
         i = 0
         for cell in cells:
-            print(i, '. ', cell.text)
+            #print(i, '. ', cell.text)
             if i == 5:
                 if cell.text in doctors_list:
                     doctors_list.remove(cell.text)
                 else:
                     print('!!! The doctor ', cell.text, ' has done two entries !!!')
-                    two_entries_flag = True
-                
+        i = i + 1
+
      
-            i = i + 1
-    if not two_entries_flag:    
-        if not doctors_list:
-            print('!!! Episode closed !!!')
-            print()
-            coincidence = df_complete_episodes[(df_complete_episodes['Surname'] == second_name) & (df_complete_episodes['Name'] == first_name) & (df_complete_episodes['Birthday'] == birthday_date)]
-            if coincidence.empty:
-                data = {'Surname': second_name, 'Name': first_name, 'Birthday': birthday_date}
-                df_complete_episodes = df__complete_episodes.append(data, ignore_index=True)
-                df.to_excel("Complete_Episodes.xlsx", index=False)
-                        
-            else:
-                print("Episode was written")
-                print("___________________")
-                print()
-            
+         
+   
+    if not doctors_list:
+        print('!!! Episode closed !!!')
+        print()
+        coincidence = df_complete_episodes[(df_complete_episodes['Surname'] == second_name) & (df_complete_episodes['Name'] == first_name) & (df_complete_episodes['Birthday'] == birthday_date)]
+        if coincidence.empty:
+            data = {'Surname': second_name, 'Name': first_name, 'Birthday': birthday_date}
+            df_complete_episodes = df_complete_episodes.append(data, ignore_index=True)
+            df.to_excel("Complete_Episodes.xlsx", index=False)
+                    
         else:
-            print('Remaining doctors: ', doctors_list)
+            print("Episode was written")
+            print("___________________")
+            print()
+        
+    else:
+        print('Remaining doctors: ', doctors_list)
 
 
     print('look for button patient and press it')
