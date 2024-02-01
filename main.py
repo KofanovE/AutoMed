@@ -151,30 +151,30 @@ for index, row in df_patients.iterrows():
                 print()
                 if "Z02.3" in cell.text:
                     selected_episode = cell
-                    
-                else:
-                    break
-
-            elif i == 3:
-                specified_date = datetime.strptime(cell.text[:10], '%d.%m.%Y')
-                print('#', specified_date)
-                if specified_date > dead_time:
-                    # If time is ok, and it's z02.3
                     doctors_list = full_doctors_list.copy()
                     selected_episode.click()
                     print('look for all reception')
                     print()
                     WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.CSS_SELECTOR, '.ant-table-tbody')))
-
                     time.sleep(3)
 
-                    
-
                     status_episode = driver.find_element(By.CSS_SELECTOR, 'div.col-md-12:nth-child(3) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1)')
-                    print('###', status_episode.text)
+                    print('status: ', status_episode.text)
+                    print()
+
+                    date = driver.find_element(By.CSS_SELECTOR, 'div.col-md-12:nth-child(4) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > div:nth-child(1)')
+                    create_episode = datetime.strptime(date.text[:10], '%d.%m.%Y')
+                    print('create: ', create_episode)
+                    print()
+
+
+                    id_episode = driver.find_element(By.CSS_SELECTOR, '.col-md-4 > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > div:nth-child(1)')
+                    print('id: ', id_episode.text)
                     print()
                     
+
                     
+        
                     receptions = driver.find_element(By.CSS_SELECTOR, '.ant-table-tbody')
                     rows_receptions = receptions.find_elements(By.TAG_NAME, 'tr')
                     # Check all punkts of current episode
@@ -187,12 +187,44 @@ for index, row in df_patients.iterrows():
                             if j == 5:
                                 print('Here!')
                                 if cell_episode.text in doctors_list:
-                                    doctors_list.remove(cell_episode.text)
-                                else:
-                                    print('!!! The doctor ', cell_episode.text, ' has done two entries !!!')                        
+                                    
+                                    doctors_list.remove(cell_episode.text)                     
                             j = j + 1
 
-                    if not doctors_list:
+                    if create_episode < dead_time:
+                        ready_episode = "Delay"
+                    elif not doctors_list:
+                        ready_episode = "Ready"
+                    else:
+                        ready_episode = "Not ready"
+                            
+                    
+                    break
+                                    
+                    
+                else:
+                    # Episode z02.3, but there is truble with time
+                    
+                    break
+            i = i + 1
+            
+             
+    WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'li.active > a:nth-child(1) > span:nth-child(1) > svg:nth-child(1)'))).click()
+
+
+"""
+
+
+            elif i == 3:
+                specified_date = datetime.strptime(cell.text[:10], '%d.%m.%Y')
+                print('#', specified_date)
+                if specified_date > dead_time:
+                    # If time is ok, and it's z02.3
+
+
+
+
+            if not doctors_list:
                         print('!!! Episode closed !!!')
                         print()
                         # Chek the carrent pacient in episode list
@@ -211,29 +243,6 @@ for index, row in df_patients.iterrows():
                         print('Remaining doctors: ', doctors_list)
                     break
 
-                    
-
-
-                                    
-                    
-                else:
-                    # Episode z02.3, but there is truble with time
-                    
-                    #print("no_3")
-                    print()
-                    break
-            i = i + 1
-            
-             
-    WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'li.active > a:nth-child(1) > span:nth-child(1) > svg:nth-child(1)'))).click()
-
-
-
-
-
-
-
-
-
+"""
 
 
