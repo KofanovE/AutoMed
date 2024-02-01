@@ -167,6 +167,14 @@ for index, row in df_patients.iterrows():
                     WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.CSS_SELECTOR, '.ant-table-tbody')))
 
                     time.sleep(3)
+
+                    
+
+                    status_episode = driver.find_element(By.CSS_SELECTOR, 'div.col-md-12:nth-child(3) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1)')
+                    print('###', status_episode.text)
+                    print()
+                    
+                    
                     receptions = driver.find_element(By.CSS_SELECTOR, '.ant-table-tbody')
                     rows_receptions = receptions.find_elements(By.TAG_NAME, 'tr')
                     # Check all punkts of current episode
