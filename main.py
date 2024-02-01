@@ -9,7 +9,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from datetime import datetime, timedelta
 from cred import email, key
-#from patients import first_name, second_name, birthday_date
 from doctors import full_doctors_list
 import os
 import time
@@ -17,6 +16,8 @@ import time
 current_date = datetime.now()
 dead_time = current_date - timedelta(20)
 
+
+# read DF Complete episodes
 try:
     df_complete_episodes = pd.read_excel("Complete_Episodes.xlsx")
 except FileNotFoundError:
@@ -24,6 +25,7 @@ except FileNotFoundError:
 print(df_complete_episodes)
 print()
 
+# read DF Patients
 try:
     df_patients = pd.read_excel("Patients.xlsx")
 except FileNotFoundError:
@@ -77,6 +79,8 @@ for index, row in df_patients.iterrows():
     second_name = row["Surname"]
     first_name = row["Name"]
     birthday_date = row["Birthday"]
+
+    print("#1", second_name, first_name, birthday_date)
     
 
 
@@ -131,107 +135,89 @@ for index, row in df_patients.iterrows():
     rows_episodes = episodes.find_elements(By.TAG_NAME, 'tr')
 
     
+    
 
-    flag_episode = False # It's working, when there is only one z02.3 episode in episodes
+
+
+    # Check all episodes of current pacient
     for row in rows_episodes:
         cells = row.find_elements(By.TAG_NAME, 'td')
         i = 0
         for cell in cells:
             #print(i, '. ', cell.text)
-            if i == 0:
-                print("!!!", cell.tag_name)
-                print(cell.get_attribute("class"))
-                print(cell.value_of_css_property("fill"))
-                print(cell.value_of_css_property("stroke"))
             
             if i == 1:
+                print('#', cell.text)
+                print()
                 if "Z02.3" in cell.text:
-                    #print("yes_1")
                     selected_episode = cell
+                    
                 else:
-                    #print("no_1")
                     break
-            elif i == 2:
-                if "Діагностика" in cell.text:
-                    #print("yes_2")
-                    print()
-                else:
-                    print("no_2")
-                    break
+
             elif i == 3:
                 specified_date = datetime.strptime(cell.text[:10], '%d.%m.%Y')
+                print('#', specified_date)
                 if specified_date > dead_time:
-                    #print("yes_3")
-                    flag_episode = True
-                    
+                    # If time is ok, and it's z02.3
+                    doctors_list = full_doctors_list.copy()
+                    selected_episode.click()
+                    print('look for all reception')
+                    print()
+                    WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.CSS_SELECTOR, '.ant-table-tbody')))
+
+                    time.sleep(3)
+                    receptions = driver.find_element(By.CSS_SELECTOR, '.ant-table-tbody')
+                    rows_receptions = receptions.find_elements(By.TAG_NAME, 'tr')
+                    # Check all punkts of current episode
+                    for row in rows_receptions:
+                        cells_episode = row.find_elements(By.TAG_NAME, 'td')
+                        j = 0
+                        for cell_episode in cells_episode:
+                            #print(i, '. ', cell.text)
+                            print('#', cell_episode.text)
+                            if j == 5:
+                                print('Here!')
+                                if cell_episode.text in doctors_list:
+                                    doctors_list.remove(cell_episode.text)
+                                else:
+                                    print('!!! The doctor ', cell_episode.text, ' has done two entries !!!')                        
+                            j = j + 1
+
+                    if not doctors_list:
+                        print('!!! Episode closed !!!')
+                        print()
+                        # Chek the carrent pacient in episode list
+                        coincidence = df_complete_episodes[(df_complete_episodes['Surname'] == second_name) & (df_complete_episodes['Name'] == first_name) & (df_complete_episodes['Birthday'] == birthday_date)]
+                        if coincidence.empty:
+                            data = {'Surname': second_name, 'Name': first_name, 'Birthday': birthday_date}
+                            df_complete_episodes = df_complete_episodes.append(data, ignore_index=True)
+                            df.to_excel("Complete_Episodes.xlsx", index=False)
+                        
+                        else:
+                            print("Episode was written")
+                            print("___________________")
+                            print()
+            
+                    else:
+                        print('Remaining doctors: ', doctors_list)
                     break
+
+                    
+
+
+                                    
+                    
                 else:
+                    # Episode z02.3, but there is truble with time
+                    
                     #print("no_3")
                     print()
                     break
             i = i + 1
             
-    if selected_episode and flag_episode:
-        doctors_list = full_doctors_list.copy()
-        selected_episode.click()
-    else:
-        print("No selected episode")
-
-
-
-
-    print('look for all reception')
-    print()
-    WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.CSS_SELECTOR, '.ant-table-tbody')))
-
-
-    time.sleep(3)
-    receptions = driver.find_element(By.CSS_SELECTOR, '.ant-table-tbody')
-    rows_receptions = receptions.find_elements(By.TAG_NAME, 'tr')
-
-    
-
-
-    for row in rows_receptions:
-        cells = row.find_elements(By.TAG_NAME, 'td')
-        i = 0
-        for cell in cells:
-            #print(i, '. ', cell.text)
-            if i == 5:
-                if cell.text in doctors_list:
-                    doctors_list.remove(cell.text)
-                else:
-                    print('!!! The doctor ', cell.text, ' has done two entries !!!')
-        i = i + 1
-
-     
-         
-   
-    if not doctors_list:
-        print('!!! Episode closed !!!')
-        print()
-        coincidence = df_complete_episodes[(df_complete_episodes['Surname'] == second_name) & (df_complete_episodes['Name'] == first_name) & (df_complete_episodes['Birthday'] == birthday_date)]
-        if coincidence.empty:
-            data = {'Surname': second_name, 'Name': first_name, 'Birthday': birthday_date}
-            df_complete_episodes = df_complete_episodes.append(data, ignore_index=True)
-            df.to_excel("Complete_Episodes.xlsx", index=False)
-                    
-        else:
-            print("Episode was written")
-            print("___________________")
-            print()
-        
-    else:
-        print('Remaining doctors: ', doctors_list)
-
-
-    print('look for button patient and press it')
-    print()
+             
     WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'li.active > a:nth-child(1) > span:nth-child(1) > svg:nth-child(1)'))).click()
-
-    
-
-
 
 
 
