@@ -21,7 +21,25 @@ dead_time = current_date - timedelta(20)
 try:
     df_complete_episodes = pd.read_excel("Complete_Episodes.xlsx")
 except FileNotFoundError:
-    df_complete_episodes = pd.DataFrame()
+    data = {'id': [],
+            'Ready': [],
+            'Status' : [],
+            'Creation' : [],
+            'Surname': [],
+            'Name': [],
+            'Birthday': [],
+            'Прудченко О. В.': [],
+            'Бабенко О. І.': [],
+            'Білай-Рижова Ю. С.': [],
+            'Трегуб Е. В.': [],
+            'Бальченко І. С.': [],
+            'Андрєєв Ю. Ф.': [],
+            'Тушинський К. С.': [],
+            'episode': []
+            }
+    df_complete_episodes = pd.DataFrame(data)
+
+#df_complete_episodes.set_index('id', inplace=True)
 print(df_complete_episodes)
 print()
 
@@ -64,6 +82,8 @@ enter_btn = driver.find_element(By.CSS_SELECTOR, '.btn')
 print('press enter')
 print()
 enter_btn.click()
+
+time.sleep(2)
 
 print('look for button patient and press it')
 print()
@@ -168,8 +188,8 @@ for index, row in df_patients.iterrows():
                     print()
 
 
-                    id_episode = driver.find_element(By.CSS_SELECTOR, '.col-md-4 > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > div:nth-child(1)')
-                    print('id: ', id_episode.text)
+                    num_episode = driver.find_element(By.CSS_SELECTOR, '.col-md-4 > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > div:nth-child(1)')
+                    print('num_episode: ', num_episode.text)
                     print()
                     
 
@@ -182,10 +202,9 @@ for index, row in df_patients.iterrows():
                         cells_episode = row.find_elements(By.TAG_NAME, 'td')
                         j = 0
                         for cell_episode in cells_episode:
-                            #print(i, '. ', cell.text)
-                            print('#', cell_episode.text)
+                            #print('#', cell_episode.text)
                             if j == 5:
-                                print('Here!')
+                                #print('Here!')
                                 if cell_episode.text in doctors_list:
                                     
                                     doctors_list.remove(cell_episode.text)                     
@@ -197,19 +216,71 @@ for index, row in df_patients.iterrows():
                         ready_episode = "Ready"
                     else:
                         ready_episode = "Not ready"
-                            
+                    if  df_complete_episodes.empty:
+                        series_index = 1
+                    else:
+                        series_index = df_complete_episodes.index[-1]+1
+
+                    print('series_index', series_index)
+                    
+                    data_episode = {'id': series_index,
+                                    'Ready': ready_episode,
+                                    'Status' : status_episode.text,
+                                    'Creation' : date.text[:10],
+                                    'Surname': second_name,
+                                    'Name': first_name,
+                                    'Birthday': birthday_date,
+                                    'Прудченко О. В.': True,
+                                    'Бабенко О. І.': True,
+                                    'Білай-Рижова Ю. С.': True,
+                                    'Трегуб Е. В.': True,
+                                    'Бальченко І. С.': True,
+                                    'Андрєєв Ю. Ф.': True,
+                                    'Тушинський К. С.': True,
+                                    'episode': num_episode.text,
+                                    }
+
+                    
+                    new_episode = pd.Series(data_episode)
+                    print(new_episode)
+              
+                                                   
+
+                    
+                    if doctors_list:
+                        for doctor in doctors_list:
+                            new_episode[doctor] = False
+
+
+                    
+                    
+                    if not df_complete_episodes['episode'].str.contains(num_episode.text).any():
+                        print('!!! 1')
+                        df_complete_episodes = pd.concat([df_complete_episodes, new_episode.to_frame().T], ignore_index=True)
+                        #df_complete_episodes.loc[len(df_complete_episodes)] = new_episode
+                    else:
+                        row_index = df_complete_episodes.loc[df_complete_episodes['episode'] == num_episode.text].index[0]
+                        for key, value in new_episode.items():
+                            df_complete_episodes.at[row_index, key] = value
+                        print('!!! 2')
+
+                    
                     
                     break
                                     
                     
                 else:
-                    # Episode z02.3, but there is truble with time
+                    # Not episode z02.3
                     
                     break
             i = i + 1
-            
+
+    
              
     WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'li.active > a:nth-child(1) > span:nth-child(1) > svg:nth-child(1)'))).click()
+
+    if index == len(df_patients) - 1:
+        df_complete_episodes.to_excel("Complete_Episodes.xlsx", index=False)
 
 
 """
