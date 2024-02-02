@@ -87,8 +87,9 @@ time.sleep(2)
 
 print('look for button patient and press it')
 print()
-WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'div.col-xs-12:nth-child(6) > a:nth-child(1) > div:nth-child(1)'))).click()
-
+btn = WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'div.col-xs-12:nth-child(6) > a:nth-child(1) > div:nth-child(1)')))
+time.sleep(2)
+btn.click()
 
 
 
@@ -150,6 +151,11 @@ for index, row in df_patients.iterrows():
     print()
     WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.CSS_SELECTOR, '.ant-table-content')))
 
+
+
+    
+    
+
     time.sleep(3)
     episodes = driver.find_element(By.CSS_SELECTOR, '.ant-table-content')
     rows_episodes = episodes.find_elements(By.TAG_NAME, 'tr')
@@ -157,10 +163,13 @@ for index, row in df_patients.iterrows():
     
     
 
-
+    exit_loop = False
 
     # Check all episodes of current pacient
     for row in rows_episodes:
+        if exit_loop:
+                print("!!! 4")
+                break
         cells = row.find_elements(By.TAG_NAME, 'td')
         i = 0
         for cell in cells:
@@ -264,15 +273,16 @@ for index, row in df_patients.iterrows():
                             df_complete_episodes.at[row_index, key] = value
                         print('!!! 2')
 
-                    
-                    
+                    exit_loop = True
+                    print("!!! 3")
                     break
                                     
                     
                 else:
-                    # Not episode z02.3
-                    
+                    # Not episode z02.3                   
                     break
+            
+            
             i = i + 1
 
     
