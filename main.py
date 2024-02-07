@@ -7,6 +7,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import TimeoutException
 from datetime import datetime, timedelta
 from cred import email, key
 from doctors import full_doctors_list
@@ -139,10 +140,22 @@ for index, row in df_patients.iterrows():
     print()
     WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '.margin-left-offset-20 > button:nth-child(1)'))).click()
 
+
+
     print('look for button operation with patient')
     print()
-    WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '.btn-text-lg > span:nth-child(1) > svg:nth-child(1)'))).click()
+    try:
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '.btn-text-lg > span:nth-child(1) > svg:nth-child(1)'))).click()
+    except TimeoutException:
+        WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'li.active > a:nth-child(1) > span:nth-child(1) > svg:nth-child(1)'))).click()
+        print("Uncorrect data")
+        # write data to specil file
+        WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div/div[2]/div[2]/div[2]/div/div/div[2]/div[1]/form/div[1]/div[1]/div/div[2]/div/input'))).clear()
+        driver.find_element(By.CSS_SELECTOR, 'div.form-group:nth-child(2) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > input:nth-child(1)').clear()
+        driver.find_element(By.XPATH, '/html/body/div/div/div/div[2]/div[2]/div[2]/div/div/div[2]/div[1]/form/div[1]/div[3]/div/div[2]/div/div/input').clear()
+        continue
 
+    
     print('look for button episode')
     print()
     WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'li.ant-dropdown-menu-item:nth-child(4) > span:nth-child(1) > a:nth-child(1)'))).click()
@@ -218,19 +231,21 @@ for index, row in df_patients.iterrows():
                                     
                                     doctors_list.remove(cell_episode.text)                     
                             j = j + 1
-
-                    if create_episode < dead_time:
+                    if status_episode.text == 'Завершений':
+                        ready_episode = "Closed"
+                    elif create_episode < dead_time:
                         ready_episode = "Delay"
                     elif not doctors_list:
                         ready_episode = "Ready"
                     else:
                         ready_episode = "Not ready"
-                    if  df_complete_episodes.empty:
-                        series_index = 1
+                    
+                    if not df_complete_episodes['episode'].str.contains(num_episode.text).any():
+                        series_index = len(df_complete_episodes) + 1
                     else:
-                        series_index = df_complete_episodes.index[-1]+1
-
-                    print('series_index', series_index)
+                        series_index = df_complete_episodes.loc[df_complete_episodes['episode'] == num_episode.text].index[0]+1
+                    
+                    
                     
                     data_episode = {'id': series_index,
                                     'Ready': ready_episode,
@@ -266,7 +281,6 @@ for index, row in df_patients.iterrows():
                     if not df_complete_episodes['episode'].str.contains(num_episode.text).any():
                         print('!!! 1')
                         df_complete_episodes = pd.concat([df_complete_episodes, new_episode.to_frame().T], ignore_index=True)
-                        #df_complete_episodes.loc[len(df_complete_episodes)] = new_episode
                     else:
                         row_index = df_complete_episodes.loc[df_complete_episodes['episode'] == num_episode.text].index[0]
                         for key, value in new_episode.items():
