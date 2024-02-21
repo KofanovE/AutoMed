@@ -1,26 +1,22 @@
 import wx
 
 class MyFrame(wx.Frame):
-    def __init__ (self, parent, title):
-        super(MyFrame, self).__init__(parent, title=title, size=(300, 200))
+    def __init__ (self, *args, **kw):
+        super(MyFrame, self).__init__(*args, **kw)
 
         self.panel = wx.Panel(self)
-        self.button = wx.Button(self.panel, label="Press me")
-        self.text = wx.StaticText(self.panel, label="Text will be here")
+        self.text_ctrl = wx.TextCtrl(self.panel, style=wx.TE_MULTILINE)
+        
+
+
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.button,0, wx.ALL|wx.CENTER, 5)
-        sizer.Add(self.text, 0, wx.ALL|wx.CENTER, 5)
+
+        sizer.Add(self.text_ctrl, 1, wx.EXPAND | wx.ALL, 5)
         self.panel.SetSizer(sizer)
 
-        self.Bind(wx.EVT_BUTTON, self.on_button_click, self.button)
 
-        self.Show()
 
-    def on_button_click(self, event):
-        self.text.SetLabel("Button is pressed")
+    def update_surname(self, surname):
+        self.text_ctrl.SetValue(surname)
 
-if __name__ == "__main__":
-    app = wx.App()
-    frame = MyFrame(None, title="Example of GUI")
-    app.MainLoop()
