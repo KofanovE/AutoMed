@@ -25,11 +25,20 @@ class MyFrame(wx.Frame):
         panel = wx.Panel(self)
         self.text_ctrl_lastname = wx.TextCtrl(panel, style=wx.TE_READONLY)
         self.text_ctrl_time = wx.TextCtrl(panel, style=wx.TE_READONLY)
+        self.text_ctrl_lastname.SetMinSize((200, -1))
+        self.text_ctrl_time.SetMinSize((200, -1))
 
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(self.text_ctrl_lastname, 1, wx.EXPAND | wx.ALL, 5)
         sizer.Add(self.text_ctrl_time, 1, wx.EXPAND | wx.ALL, 5)
+        
+
+
+        
+        self.SetMinSize((400, 200))
         panel.SetSizer(sizer)
+
+        
 
         self.start_time = time.time()
         self.timer = wx.Timer(self)
@@ -54,6 +63,8 @@ def main_logic(callback_lastname):
     app = wx.App(0)
     frame = MyFrame(None, "Program Display")
     frame.Show(True)
+
+    threading.Thread(target=app.MainLoop).start()
     
 
     current_date = datetime.now()
