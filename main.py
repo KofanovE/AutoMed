@@ -16,42 +16,71 @@ import time
 import wx
 import threading
 
-
+exit_flag = False
 
 class MyFrame(wx.Frame):
     def __init__(self, parent, title):
-        super(MyFrame, self).__init__(parent, title=title, size=(400, 80))
+        super(MyFrame, self).__init__(parent, title=title, size=(300, 80))
 
         panel = wx.Panel(self)
+        self.text_ctrl_global_time = wx.TextCtrl(panel, style=wx.TE_READONLY)
         self.text_ctrl_lastname = wx.TextCtrl(panel, style=wx.TE_READONLY)
         self.text_ctrl_time = wx.TextCtrl(panel, style=wx.TE_READONLY)
-        self.text_ctrl_lastname.SetMinSize((200, -1))
-        self.text_ctrl_time.SetMinSize((200, -1))
+        self.text_ctrl_status = wx.TextCtrl(panel, style=wx.TE_READONLY)
+        
+        self.text_ctrl_lastname.SetMinSize((100, -1))
+        self.text_ctrl_time.SetMinSize((100, -1))
+        self.text_ctrl_global_time.SetMinSize((100, -1))
+        self.text_ctrl_status.SetMinSize((100, -1))
+        
 
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(self.text_ctrl_lastname, 1, wx.EXPAND | wx.ALL, 5)
-        sizer.Add(self.text_ctrl_time, 1, wx.EXPAND | wx.ALL, 5)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+
+        sizer.Add(self.text_ctrl_global_time, 1, wx.EXPAND | wx.ALL, 5)
+        sizer.Add(self.create_horizontal_sizer(self.text_ctrl_lastname, self.text_ctrl_time), 1, wx.EXPAND | wx.ALL, 5)       
+        sizer.Add(self.text_ctrl_status, 1, wx.EXPAND | wx.ALL, 5)
+
         
 
 
         
-        self.SetMinSize((400, 200))
+        self.SetMinSize((500, 200))
         panel.SetSizer(sizer)
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+        self.Center()
 
         
 
         self.start_time = time.time()
+        self.global_time = time.time()
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.update_time, self.timer)
         self.timer.Start(1000)
+        self.surname = None
+
+    def create_horizontal_sizer(self, ctrl1, ctrl2):
+        hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        hsizer.Add(ctrl1, 1, wx.EXPAND | wx.ALL, 5)
+        hsizer.Add(ctrl2, 1, wx.EXPAND | wx.ALL, 5)
+        return hsizer
 
     def update_display_lastname(self, lastname):
+        self.surname = lastname
         wx.CallAfter(self.text_ctrl_lastname.SetValue, lastname)
+        self.start_time = time.time()
 
     def update_time(self, event):
         current_time = time.time()
         elapsed_time = round(current_time - self.start_time)
-        wx.CallAfter(self.text_ctrl_time.SetValue,  f"Time elapsed: {elapsed_time} seconds")
+        elapsed_time_global = round(current_time - self.global_time)
+        if self.surname:
+            wx.CallAfter(self.text_ctrl_time.SetValue,  f"Time for current person: {elapsed_time} seconds")
+        wx.CallAfter(self.text_ctrl_global_time.SetValue,  f"Time global: {elapsed_time_global} seconds")
+
+    def OnClose(self, event):
+        global exit_flag
+        exit_flag = True
+        wx.GetApp().ExitMainLoop()
         
 
         
@@ -59,6 +88,8 @@ class MyFrame(wx.Frame):
 def main_logic(callback_lastname):
 
     from cred import email, key
+
+    global exit_flag
 
     app = wx.App(0)
     frame = MyFrame(None, "Program Display")
@@ -93,6 +124,9 @@ def main_logic(callback_lastname):
                 }
         df_complete_episodes = pd.DataFrame(data)
 
+    if exit_flag:
+        return
+
     #df_complete_episodes.set_index('id', inplace=True)
     print(df_complete_episodes)
     print()
@@ -117,9 +151,17 @@ def main_logic(callback_lastname):
 
     """ Authorization """
 
+    if exit_flag:
+        driver.quit()
+        return
+
     print('look for email input line and send email')
     print()
     WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '#email'))).send_keys(email)
+
+    if exit_flag:
+        driver.quit()
+        return
 
     print('look for email input line and send key')
     print()
@@ -133,15 +175,27 @@ def main_logic(callback_lastname):
     ##    print()
     ##    cred_line.send_keys(key)
 
+    if exit_flag:
+        driver.quit()
+        return
+
     print('look for key button enter')
     print()
     enter_btn = driver.find_element(By.CSS_SELECTOR, '.btn')
+
+    if exit_flag:
+        driver.quit()
+        return
 
     print('press enter')
     print()
     enter_btn.click()
 
     time.sleep(2)
+
+    if exit_flag:
+        driver.quit()
+        return
 
     print('look for button patient and press it')
     print()
@@ -155,6 +209,11 @@ def main_logic(callback_lastname):
 
 
     for index, row in df_patients.iterrows():
+
+        if exit_flag:
+            driver.quit()
+            return
+            
         second_name = row["Surname"]
         first_name = row["Name"]
         birthday_date = row["Birthday"]
@@ -170,36 +229,64 @@ def main_logic(callback_lastname):
 
         """ Cicle working with episodes """
 
-
+        if exit_flag:
+            driver.quit()
+            return
+        
         print('look for input second name and send it')
         print()
         WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div/div[2]/div[2]/div[2]/div/div/div[2]/div[1]/form/div[1]/div[1]/div/div[2]/div/input'))).send_keys(second_name)
 
+        if exit_flag:
+            driver.quit()
+            return
+        
         print('look for line input first name')
         print()
         first_name_line = driver.find_element(By.CSS_SELECTOR, 'div.form-group:nth-child(2) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > input:nth-child(1)')
-
+        if exit_flag:
+            driver.quit()
+            return
+        
         print('send first name')
         print()
         first_name_line.send_keys(first_name)
+
+        if exit_flag:
+            driver.quit()
+            return
 
         print('look for key line input birthday date')
         print()
         birthday_line = driver.find_element(By.XPATH, '/html/body/div/div/div/div[2]/div[2]/div[2]/div/div/div[2]/div[1]/form/div[1]/div[3]/div/div[2]/div/div/input')
 
+        if exit_flag:
+            driver.quit()
+            return
+        
         print('click on line input birthday')
         print()
         birthday_line.click()
 
+        if exit_flag:
+            driver.quit()
+            return
+        
         print('send birthday date')
         print()
         birthday_line.send_keys(birthday_date)
+
+        if exit_flag:
+            driver.quit()
+            return
 
         print('look for button find a patient and press it')
         print()
         WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '.margin-left-offset-20 > button:nth-child(1)'))).click()
 
-
+        if exit_flag:
+            driver.quit()
+            return
 
         print('look for button operation with patient')
         print()
@@ -214,10 +301,18 @@ def main_logic(callback_lastname):
             driver.find_element(By.XPATH, '/html/body/div/div/div/div[2]/div[2]/div[2]/div/div/div[2]/div[1]/form/div[1]/div[3]/div/div[2]/div/div/input').clear()
             continue
 
+
+        if exit_flag:
+            driver.quit()
+            return
         
         print('look for button episode')
         print()
         WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'li.ant-dropdown-menu-item:nth-child(4) > span:nth-child(1) > a:nth-child(1)'))).click()
+
+        if exit_flag:
+            driver.quit()
+            return
 
         print('look for all episodes')
         print()
@@ -233,7 +328,9 @@ def main_logic(callback_lastname):
         rows_episodes = episodes.find_elements(By.TAG_NAME, 'tr')
 
         
-        
+        if exit_flag:
+            driver.quit()
+            return        
 
         exit_loop = False
 
@@ -247,10 +344,24 @@ def main_logic(callback_lastname):
             for cell in cells:
                 #print(i, '. ', cell.text)
                 
+                if exit_flag:
+                    driver.quit()
+                    return 
+                
                 if i == 1:
+                    
+                    if exit_flag:
+                        driver.quit()
+                        return
+                    
                     print('#', cell.text)
                     print()
                     if "Z02.3" in cell.text:
+                        
+                        if exit_flag:
+                            driver.quit()
+                            return
+                        
                         selected_episode = cell
                         doctors_list = full_doctors_list.copy()
                         selected_episode.click()
@@ -259,14 +370,25 @@ def main_logic(callback_lastname):
                         WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.CSS_SELECTOR, '.ant-table-tbody')))
                         time.sleep(3)
 
+                        if exit_flag:
+                            driver.quit()
+                            return
+                        
                         status_episode = driver.find_element(By.CSS_SELECTOR, 'div.col-md-12:nth-child(3) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1)')
                         print('status: ', status_episode.text)
                         print()
+
+                        if exit_flag:
+                            driver.quit()
+                            return 
 
                         date = driver.find_element(By.CSS_SELECTOR, 'div.col-md-12:nth-child(4) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > div:nth-child(1)')
                         create_episode = datetime.strptime(date.text[:10], '%d.%m.%Y')
                         print('create: ', create_episode)
                         print()
+
+                        if exit_flag:
+                            return 
 
 
                         num_episode = driver.find_element(By.CSS_SELECTOR, '.col-md-4 > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > div:nth-child(1)')
@@ -275,11 +397,19 @@ def main_logic(callback_lastname):
                         
 
                         
-            
+                        if exit_flag:
+                            driver.quit()
+                            return
+                        
                         receptions = driver.find_element(By.CSS_SELECTOR, '.ant-table-tbody')
                         rows_receptions = receptions.find_elements(By.TAG_NAME, 'tr')
                         # Check all punkts of current episode
                         for row in rows_receptions:
+                            
+                            if exit_flag:
+                                driver.quit()
+                                return
+                            
                             cells_episode = row.find_elements(By.TAG_NAME, 'td')
                             j = 0
                             for cell_episode in cells_episode:
@@ -364,6 +494,10 @@ def main_logic(callback_lastname):
 
         if index == len(df_patients) - 1:
             df_complete_episodes.to_excel("Complete_Episodes.xlsx", index=False)
+            
+    if exit_flag:
+        driver.quit()
+        return 
 
     app.MainLoop()
 
